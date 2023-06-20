@@ -17,6 +17,10 @@ app.post("/users", (req, res) => {
   res.status(201).json(user);
 });
 
+app.get('/users', (req, res) => {
+    res.status(200).json(users);
+})
+
 app.listen(port, () => {
   console.log(`App is listening at port ${port}`);
 });
