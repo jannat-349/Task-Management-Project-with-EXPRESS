@@ -1,6 +1,6 @@
+require("dotenv").config();
 const express = require("express");
 const app = express();
-const port = 6000;
 const bodyParser = require("body-parser");
 
 app.use(bodyParser.json());
@@ -60,6 +60,7 @@ function getUserByID(req) {
   return user;
 }
 
+const port = process.env.PORT;
 app.listen(port, () => {
   console.log(`App is listening at port ${port}`);
 });
