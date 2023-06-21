@@ -24,8 +24,7 @@ app.get("/users", (req, res) => {
 });
 
 app.get("/users/:id", (req, res) => {
-  const id = req.params.id;
-  const user = users.find((u) => u.id == id);
+  const user = getUserByID(req);
   if (user) {
     res.status(200).json(user);
   }
@@ -33,9 +32,8 @@ app.get("/users/:id", (req, res) => {
 });
 
 app.put("/users/:id", (req, res) => {
-  const id = req.params.id;
   const body = req.body;
-  const user = users.find((u) => u.id == id);
+  const user = getUserByID(req);
   if (user) {
     user.name = body.name;
     user.age = body.age;
@@ -44,6 +42,23 @@ app.put("/users/:id", (req, res) => {
     res.status(404).json({ message: "User not found!!!" });
   }
 });
+
+app.delete("/users/:id", (req, res) => {
+  const id = req.params.id;
+  const userIndex = users.findIndex((u) => u.id == id);
+  if (userIndex) {
+    users.splice(userIndex, 1);
+    res.json(users);
+  } else {
+    res.status(404).json({ message: "User not found!!!" });
+  }
+});
+
+function getUserByID(req) {
+  const id = req.params.id;
+  const user = users.find((u) => u.id == id);
+  return user;
+}
 
 app.listen(port, () => {
   console.log(`App is listening at port ${port}`);
