@@ -7,9 +7,17 @@ const bodyParser = require("body-parser");
 app.use(bodyParser.json());
 
 const uri = process.env.MONGODB_URI;
-mongoose.connect(uri, { useNewUrlParser: true }).then(() => {
-  console.log("Database connected...");
-});
+
+async function connectToMongoDB() {
+  try {
+    await mongoose.connect(uri, { useNewUrlParser: true });
+    console.log("Database connected...");
+  } catch (error) {
+    console.error("Error connecting to MongoDB:", error.message);
+    // Retry or handle the error accordingly
+  }
+}
+connectToMongoDB();
 
 let users = [];
 let id = 0;
