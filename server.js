@@ -18,15 +18,13 @@ async function connectToMongoDB() {
 }
 connectToMongoDB();
 
-const userSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
+const userSchema = new mongoose.Schema(
+  {
+    name: String,
+    age: Number,
   },
-  age: {
-    type: Number,
-  },
-});
+  { timestamps: true }
+);
 
 const User = mongoose.model("User", userSchema);
 
@@ -59,42 +57,48 @@ app.get("/users", async (req, res) => {
   }
 });
 
-// app.get("/users/:id", (req, res) => {
-//   const user = getUserByID(req);
-//   if (user) {
-//     res.status(200).json(user);
-//   }
-//   res.status(400).send(`User not found!!`);
-// });
+app.get("/users/:id", async (req, res) => {
+  const id = req.params.id;
+  try {
+    const user = await User.findById(id);
+    if (user) {
+      res.status(200).json(user);
+    } else {
+      res.status(404).json({ message: `User not found` });
+    }
+  } catch (error) {
+    res.status(500).send(`Something Went wrong`);
+  }
+});
 
-// app.put("/users/:id", (req, res) => {
-//   const body = req.body;
-//   const user = getUserByID(req);
-//   if (user) {
-//     user.name = body.name;
-//     user.age = body.age;
-//     res.status(200).json(user);
-//   } else {
-//     res.status(404).json({ message: "User not found!!!" });
-//   }
-// });
+app.put("/users/:id", async(req, res) => {
+  try {
+    const id = req.params.id;
+    const body = req.body;
+    const user = await User.findByIdAndUpdate(id, body, { new: true , strict: false });
+    if (user) {
+      res.status(200).json(user);
+    } else {
+      res.status(404).json({ message: `User not found` });
+    }
+  } catch (error) {
+    res.status(500).send(`Something Went wrong`);
+  }
+});
 
-// app.delete("/users/:id", (req, res) => {
-//   const id = req.params.id;
-//   const userIndex = users.findIndex((u) => u.id == id);
-//   if (userIndex) {
-//     users.splice(userIndex, 1);
-//     res.json(users);
-//   } else {
-//     res.status(404).json({ message: "User not found!!!" });
-//   }
-// });
-
-// function getUserByID(req) {
-//   const id = req.params.id;
-//   const user = users.find((u) => u.id == id);
-//   return user;
-// }
+app.delete("/users/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+    const user = await User.findByIdAndDelete(id);
+    if (user) {
+      res.status(200).json(user);
+    } else {
+      res.status(404).json({ message: `User not found` });
+    }
+  } catch (error) {
+    res.status(500).send(`Something Went wrong`);
+  }
+});
 
 const port = process.env.PORT;
 app.listen(port, () => {
