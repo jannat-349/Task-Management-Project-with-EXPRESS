@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
+const bcrypt = require("bcrypt");
 
 app.use(bodyParser.json());
 
@@ -21,6 +22,8 @@ connectToMongoDB();
 const userSchema = new mongoose.Schema(
   {
     name: String,
+    email: String,
+    password: String,
     age: Number,
   },
   { timestamps: true }
@@ -33,19 +36,47 @@ app.get("/", (req, res) => {
 });
 
 app.post("/users", async (req, res) => {
-  const user = req.body;
-  const newUser = new User({
-    name: user.name,
-    age: user.age,
-  });
-  await newUser
-    .save()
-    .then((savedUser) => {
-      res.status(201).json(savedUser);
-    })
-    .catch((error) => {
-      res.status(404).send("User not created!!");
+  try {
+    const body = req.body;
+    const salt = await bcrypt.genSalt(10);
+    const hash = await bcrypt.hash(body.password, salt);
+    const password = hash;
+    const userObj = new User({
+      name: body.name,
+      email: body.email,
+      password: password,
+      age: body.age,
     });
+    await userObj
+      .save()
+      .then((savedUser) => {
+        res.status(201).json(savedUser);
+      })
+      .catch((error) => {
+        res.status(404).send("User not created!!");
+      });
+  } catch (error) {
+    res.status(500).send(`Something Went wrong`);
+  }
+});
+
+app.post("/users/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email: email });
+    if (user) {
+      const isValidPassword = await bcrypt.compare(password, user.password);
+      if (isValidPassword) {
+        res.status(200).json(user);
+      } else {
+        res.status(401).json({ message: `Wrong Password!!` });
+      }
+    } else {
+      res.status(404).json({ message: `User Not Found` });
+    }
+  } catch (error) {
+    res.status(500).send(`Something Went wrong`);
+  }
 });
 
 app.get("/users", async (req, res) => {
@@ -71,11 +102,14 @@ app.get("/users/:id", async (req, res) => {
   }
 });
 
-app.put("/users/:id", async(req, res) => {
+app.put("/users/:id", async (req, res) => {
   try {
     const id = req.params.id;
     const body = req.body;
-    const user = await User.findByIdAndUpdate(id, body, { new: true , strict: false });
+    const user = await User.findByIdAndUpdate(id, body, {
+      new: true,
+      strict: false,
+    });
     if (user) {
       res.status(200).json(user);
     } else {
