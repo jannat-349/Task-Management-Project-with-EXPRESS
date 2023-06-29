@@ -4,6 +4,7 @@ const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
 app.use(bodyParser.json());
 
@@ -67,7 +68,10 @@ app.post("/users/login", async (req, res) => {
     if (user) {
       const isValidPassword = await bcrypt.compare(password, user.password);
       if (isValidPassword) {
-        res.status(200).json(user);
+        const token = jwt.sign({ email: user.email, id: user.id }, "secret");
+        const userObj = user.toJSON();
+        userObj["accessToken"] = token;
+        res.status(200).json(userObj);
       } else {
         res.status(401).json({ message: `Wrong Password!!` });
       }
