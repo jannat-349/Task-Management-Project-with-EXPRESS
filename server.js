@@ -120,6 +120,40 @@ app.get("/profile", authenticateToken, async (req, res) => {
   }
 });
 
+//? update a user profile api
+app.put("/profile", authenticateToken, async (req, res) => {
+  try {
+    const id = req.user.id;
+    const body = req.body;
+    const user = await User.findByIdAndUpdate(id, body, {
+      new: true,
+      strict: false,
+    });
+    if (user) {
+      res.status(200).json(user);
+    } else {
+      res.status(404).json({ message: `User not found` });
+    }
+  } catch (error) {
+    res.status(500).send(`Something Went wrong`);
+  }
+});
+
+//? delete a user profile api
+app.delete("/profile", authenticateToken, async (req, res) => {
+  try {
+    const id = req.user.id;
+    const user = await User.findByIdAndDelete(id);
+    if (user) {
+      res.status(200).json(user);
+    } else {
+      res.status(404).json({ message: `User not found` });
+    }
+  } catch (error) {
+    res.status(500).send(`Something Went wrong`);
+  }
+});
+
 app.get("/users", async (req, res) => {
   try {
     const users = await User.find({});
