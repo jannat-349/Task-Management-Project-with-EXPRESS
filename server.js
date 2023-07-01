@@ -68,7 +68,10 @@ app.post("/users/login", async (req, res) => {
     if (user) {
       const isValidPassword = await bcrypt.compare(password, user.password);
       if (isValidPassword) {
-        const token = jwt.sign({ email: user.email, id: user._id }, "secret");
+        const token = jwt.sign(
+          { email: user.email, id: user._id },
+          process.env.JWT_SECRET
+        );
         const userObj = user.toJSON();
         userObj["accessToken"] = token;
         res.status(200).json(userObj);
@@ -100,6 +103,12 @@ const authenticateToken = (req, res, next) => {
     res.status(401).json({ message: `Unauthorized` });
   }
 };
+
+//? get a user profile api
+
+app.get("/profile", authenticateToken, (req, res) => {
+  res.json({ user: req.user });
+});
 
 app.get("/users", async (req, res) => {
   try {
