@@ -68,7 +68,7 @@ app.post("/users/login", async (req, res) => {
     if (user) {
       const isValidPassword = await bcrypt.compare(password, user.password);
       if (isValidPassword) {
-        const token = jwt.sign({ email: user.email, id: user.id }, "secret");
+        const token = jwt.sign({ email: user.email, id: user._id }, "secret");
         const userObj = user.toJSON();
         userObj["accessToken"] = token;
         res.status(200).json(userObj);
@@ -82,6 +82,24 @@ app.post("/users/login", async (req, res) => {
     res.status(500).send(`Something Went wrong`);
   }
 });
+
+//middleware to authenticate JWT accesss token
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  const token = authHeader && authHeader.split(" ")[1];
+  if (token) {
+    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+      if (err) {
+        res.status(401).json({ message: `Unauthorized` });
+      } else {
+        req.user = user;
+        next();
+      }
+    });
+  } else {
+    res.status(401).json({ message: `Unauthorized` });
+  }
+};
 
 app.get("/users", async (req, res) => {
   try {
