@@ -106,8 +106,18 @@ const authenticateToken = (req, res, next) => {
 
 //? get a user profile api
 
-app.get("/profile", authenticateToken, (req, res) => {
-  res.json({ user: req.user });
+app.get("/profile", authenticateToken, async (req, res) => {
+  const id = req.user.id;
+  try {
+    const user = await User.findById(id);
+    if (user) {
+      res.status(200).json(user);
+    } else {
+      res.status(404).json({ message: `User not found` });
+    }
+  } catch (error) {
+    res.status(500).send(`Something Went wrong`);
+  }
 });
 
 app.get("/users", async (req, res) => {
