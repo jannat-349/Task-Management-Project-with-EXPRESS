@@ -70,7 +70,7 @@ app.post("/users/login", async (req, res) => {
       if (isValidPassword) {
         const token = jwt.sign(
           { email: user.email, id: user._id },
-          process.env.JWT_SECRET
+          process.env.JWT_SECRET, { expiresIn: '10m'}
         );
         const userObj = user.toJSON();
         userObj["accessToken"] = token;
