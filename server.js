@@ -5,20 +5,11 @@ const app = express();
 const bodyParser = require("body-parser");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const connectDB = require("./config/db");
 
 app.use(bodyParser.json());
 
-const uri = process.env.MONGODB_URI;
-
-async function connectToMongoDB() {
-  try {
-    await mongoose.connect(uri, { useNewUrlParser: true });
-    console.log("Database connected...");
-  } catch (error) {
-    console.error("Error connecting to MongoDB:", error.message);
-  }
-}
-connectToMongoDB();
+connectDB();
 
 const userSchema = new mongoose.Schema(
   {
