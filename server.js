@@ -16,30 +16,7 @@ app.get("/", (req, res) => {
   res.json({ msg: "app successful" });
 });
 
-app.post("/users", async (req, res) => {
-  try {
-    const body = req.body;
-    const salt = await bcrypt.genSalt(10);
-    const hash = await bcrypt.hash(body.password, salt);
-    const password = hash;
-    const userObj = new User({
-      name: body.name,
-      email: body.email,
-      password: password,
-      age: body.age,
-    });
-    await userObj
-      .save()
-      .then((savedUser) => {
-        res.status(201).json(savedUser);
-      })
-      .catch((error) => {
-        res.status(404).send("User not created!!");
-      });
-  } catch (error) {
-    res.status(500).send(`Something Went wrong`);
-  }
-});
+app.use("/api/users", require("./routes/api/users.js"));
 
 async function handleEmailLogin(email, res, password) {
   const user = await User.findOne({ email: email });
