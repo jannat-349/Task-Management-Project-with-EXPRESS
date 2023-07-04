@@ -6,22 +6,11 @@ const bodyParser = require("body-parser");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const connectDB = require("./config/db");
+const User = require("./models/User");
 
 app.use(bodyParser.json());
 
 connectDB();
-
-const userSchema = new mongoose.Schema(
-  {
-    name: String,
-    email: String,
-    password: String,
-    age: Number,
-  },
-  { timestamps: true }
-);
-
-const User = mongoose.model("User", userSchema);
 
 app.get("/", (req, res) => {
   res.json({ msg: "app successful" });
