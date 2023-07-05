@@ -4,38 +4,54 @@ const bcrypt = require("bcrypt");
 const User = require("../../models/User");
 const authenticateToken = require("../../middleware/auth");
 const { handleEmailLogin, handleRefreshLogin } = require("../../utils/login");
+const { body } = require("express-validator");
+const errorCatcher = require("../../utils/errorCatcher");
 
-router.post("/", async (req, res) => {
-  try {
-    const body = req.body;
-    const salt = await bcrypt.genSalt(10);
-    const hash = await bcrypt.hash(body.password, salt);
-    const password = hash;
-    const userObj = new User({
-      name: body.name,
-      email: body.email,
-      password: password,
-      age: body.age,
-    });
-    await userObj
-      .save()
-      .then((savedUser) => {
-        res.status(201).json(savedUser);
-      })
-      .catch((error) => {
-        res.status(404).send("User not created!!");
+router.post(
+  "/",
+  [
+    body("name", "Name is required").notEmpty(),
+    body("email", "Enter a valid email").notEmpty().isEmail(),
+    body("age", "Enter a valid age").optional().isNumeric(),
+    body("password", "Password must be of 4 or more characters").isLength({
+      min: 4,
+    }),
+  ],
+  async (req, res) => {
+    try {
+      errorCatcher(req, res);
+      const body = req.body;
+      const salt = await bcrypt.genSalt(10);
+      const hash = await bcrypt.hash(body.password, salt);
+      const password = hash;
+      const userObj = new User({
+        name: body.name,
+        email: body.email,
+        password: password,
+        age: body.age,
       });
-  } catch (error) {
-    res.status(500).send(`Something Went wrong`);
+      await userObj
+        .save()
+        .then((savedUser) => {
+          res.status(201).json(savedUser);
+        })
+        .catch((error) => {
+          res.status(404).send("User not created!!");
+        });
+    } catch (error) {
+      res.status(500).send(`Something Went wrong`);
+    }
   }
-});
+);
 
-router.post("/login", async (req, res) => {
-  try {
-    const { email, password, type, refreshToken } = req.body;
-    if (!type) {
-      res.status(404).json({ message: `type is not defined` });
-    } else {
+router.post(
+  "/login",
+  [body("type", "Type is required").notEmpty()],
+  async (req, res) => {
+    try {
+      errorCatcher(req, res);
+
+      const { email, password, type, refreshToken } = req.body;
       if (type == "email") {
         await handleEmailLogin(email, res, password);
       } else if (type == "refresh") {
@@ -43,11 +59,11 @@ router.post("/login", async (req, res) => {
       } else {
         res.status(404).json({ message: `type is not correct` });
       }
+    } catch (error) {
+      res.status(500).send(`Something Went wrong ${error}`);
     }
-  } catch (error) {
-    res.status(500).send(`Something Went wrong ${error}`);
   }
-});
+);
 
 router.get("/profile", authenticateToken, async (req, res) => {
   const id = req.user.id;

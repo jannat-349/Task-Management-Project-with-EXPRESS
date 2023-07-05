@@ -1,5 +1,6 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const User = require("../models/User");
 
 async function getUserTokens(user, res) {
   const accesssToken = jwt.sign(
