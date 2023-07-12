@@ -6,10 +6,10 @@ async function getUserTokens(user, res) {
   const accesssToken = jwt.sign(
     { email: user.email, id: user._id },
     process.env.JWT_SECRET,
-    { expiresIn: "2m" }
+    { expiresIn: "2d" }
   );
   const refreshToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-    expiresIn: "3m",
+    expiresIn: "60d",
   });
   const userObj = user.toJSON();
   userObj["accessToken"] = accesssToken;
