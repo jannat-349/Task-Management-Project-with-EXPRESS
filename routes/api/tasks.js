@@ -49,6 +49,63 @@ router.get("/:id", authenticateToken, async (req, res) => {
   }
 });
 
+router.put(
+  "/status/:id",
+  [
+    authenticateToken,
+    [
+      body("status", "status is not valid").isIn([
+        "to-do",
+        "in-progress",
+        "done",
+      ]),
+    ],
+  ],
+  async (req, res) => {
+    try {
+      errorCatcher(req, res);
+      const id = req.params.id;
+      const userId = req.user.id;
+      const task = await Task.findOneAndUpdate(
+        { _id: id, userId: userId },
+        { status: req.body.status },
+        {
+          new: true,
+        }
+      );
+      if (task) {
+        res.status(200).json(task);
+      } else {
+        res.status(404).json({ message: `Task not found` });
+      }
+    } catch (error) {
+      res.status(500).send(`Something Went wrong`);
+    }
+  }
+);
+
+router.put("/:id", authenticateToken, async (req, res) => {
+  try {
+    const id = req.params.id;
+    const userId = req.user.id;
+    const body = req.body;
+    const task = await Task.findOneAndUpdate(
+      { _id: id, userId: userId },
+      body,
+      {
+        new: true,
+      }
+    );
+    if (task) {
+      res.status(200).json(task);
+    } else {
+      res.status(404).json({ message: `Task not found` });
+    }
+  } catch (error) {
+    res.status(500).send(`Something Went wrong`);
+  }
+});
+
 router.get("/", authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id;
