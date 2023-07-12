@@ -85,8 +85,7 @@ router.put("/profile", authenticateToken, async (req, res) => {
     const id = req.user.id;
     const body = req.body;
     const user = await User.findByIdAndUpdate(id, body, {
-      new: true,
-      strict: false,
+      new: true
     });
     if (user) {
       res.status(200).json(user);
