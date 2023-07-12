@@ -106,6 +106,21 @@ router.put("/:id", authenticateToken, async (req, res) => {
   }
 });
 
+router.delete("/:id", authenticateToken, async (req, res) => {
+  try {
+    const id = req.params.id;
+    const userId =  req.user.id;
+    const task = await Task.findOneAndDelete({_id: id, userId: userId});
+    if (task) {
+      res.status(200).json(task);
+    } else {
+      res.status(404).json({ message: `Task not found` });
+    }
+  } catch (error) {
+    res.status(500).send(`Something Went wrong`);
+  }
+});
+
 router.get("/", authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id;
