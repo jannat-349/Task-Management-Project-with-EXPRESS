@@ -34,6 +34,21 @@ router.post(
   }
 );
 
+router.get("/:id", authenticateToken, async (req, res) => {
+  const id = req.params.id;
+  const userId = req.user.id;
+  try {
+    const task = await Task.findOne({ _id: id, userId: userId });
+    if (task) {
+      res.status(200).json(task);
+    } else {
+      res.status(404).json({ message: `Task not found` });
+    }
+  } catch (error) {
+    res.status(500).send(`Something Went wrong`);
+  }
+});
+
 router.get("/", authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id;
